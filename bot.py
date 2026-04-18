@@ -1,12 +1,10 @@
 import requests
 import json
 import time
-import os
-import pandas as pd
 from datetime import datetime
 
 # ==============================
-# 1. Cargar configuración
+# CONFIGURACIÓN
 # ==============================
 with open("config.json") as f:
     config = json.load(f)
@@ -14,65 +12,83 @@ with open("config.json") as f:
 assets = config["assets"]
 interval = config["interval"]
 
-# ==============================
-# 2. Crear carpeta de datos
-# ==============================
-if not os.path.exists("data"):
-    os.makedirs("data")
+print("🔥 BOT ALADDIN INICIADO 🔥")
 
 # ==============================
-# 3. Obtener precios (UNA sola request)
+# HISTORIAL DE PRECIOS
 # ==============================
-def get_prices_bulk(assets):
+price_history = {}
+
+# ==============================
+# OBTENER PRECIOS (COINGECKO)
+# ==============================
+def get_prices(assets):
     ids = ",".join(assets)
     url = f"https://api.coingecko.com/api/v3/simple/price?ids={ids}&vs_currencies=usd"
-    return requests.get(url).json()
+    
+    try:
+        response = requests.get(url)
+        return response.json()
+    except Exception as e:
+        print("ERROR API:", e)
+        return {}
 
 # ==============================
-# 4. Guardar en JSON (tipo vault)
+# CALCULAR MEDIA MÓVIL
 # ==============================
-def save_json(data):
-    filename = f"data/prices_{datetime.now().strftime('%Y%m%d')}.json"
+def calculate_ma(asset, price):
+    if asset not in price_history:
+        price_history[asset] = []
     
-    with open(filename, "a") as f:
-        f.write(json.dumps(data) + "\n")
+    price_history[asset].append(price)
+
+    # limitar historial a 20 datos
+    if len(price_history[asset]) > 20:
+        price_history[asset].pop(0)
+
+    if len(price_history[asset]) >= 5:
+        ma_5 = sum(price_history[asset][-5:]) / 5
+        return ma_5
+    
+    return None
 
 # ==============================
-# 5. Guardar en CSV
+# ESTRATEGIA SIMPLE
 # ==============================
-def save_csv(data):
-    df = pd.DataFrame([data])
-    
-    filename = f"data/prices_{datetime.now().strftime('%Y%m%d')}.csv"
-    
-    if not os.path.exists(filename):
-        df.to_csv(filename, index=False)
-    else:
-        df.to_csv(filename, mode="a", header=False, index=False)
+def generate_signal(price, ma):
+    if ma is None:
+        return "WAIT"
+    if price > ma:
+        return "BUY"
+    elif price < ma:
+        return "SELL"
+    return "HOLD"
 
 # ==============================
-# 6. LOOP PRINCIPAL
+# LOOP PRINCIPAL
 # ==============================
 while True:
-    try:
-        prices = get_prices_bulk(assets)
-        
-        for asset in assets:
-            if asset in prices:
-                price = prices[asset]["usd"]
-                
-                record = {
-                    "timestamp": str(datetime.now()),
-                    "asset": asset,
-                    "price": price
-                }
+    prices = get_prices(assets)
 
-                print(f"{asset}: {price}")
+    for asset in assets:
+        if asset in prices:
+            price = prices[asset]["usd"]
 
-                save_json(record)
-                save_csv(record)
+            ma = calculate_ma(asset, price)
+            signal = generate_signal(price, ma)
 
-    except Exception as e:
-        print("ERROR:", e)
+            record = {
+                "timestamp": str(datetime.now()),
+                "asset": asset,
+                "price": price,
+                "metrics": {
+                    "ma_5": ma
+                },
+                "signal": signal,
+                "source": "coingecko"
+            }
+
+            # 📡 BÓVEDA (logs estructurados)
+            print(json.dumps(record))
 
     time.sleep(interval)
