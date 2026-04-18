@@ -1,0 +1,7 @@
+{
+  "task": "download_data",
+  "symbol": "BNBUSDT",
+  "timeframes": ["1h", "4h"],
+  "start": "2024-11-01",
+  "end": "2026-03-01"
+}
