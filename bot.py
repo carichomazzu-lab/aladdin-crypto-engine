@@ -1,101 +1,94 @@
 import requests
 import json
-from datetime import datetime
 import pandas as pd
+from datetime import datetime
+import time
 
-print("🧠 ALADDIN HISTORICAL ENGINE")
-
-# ==============================
-# CARGAR ESTRATEGIA
-# ==============================
-with open("strategy.json") as f:
-    strategy = json.load(f)
+print("🧠 ALADDIN DATA ENGINE")
 
 # ==============================
-# OBTENER DATOS HISTÓRICOS
+# CARGAR TAREA
 # ==============================
-def get_historical(strategy):
-    asset = strategy["asset"]
-    data_config = strategy["data"]
-
-    if data_config["mode"] == "days":
-        days = data_config["value"]
-
-        url = f"https://api.coingecko.com/api/v3/coins/{asset}/market_chart?vs_currency=usd&days={days}"
-        data = requests.get(url).json()
-
-        prices = data["prices"]
-
-        df = pd.DataFrame(prices, columns=["timestamp", "price"])
-        df["price"] = df["price"].astype(float)
-
-        return df
-
-    else:
-        raise Exception("Modo de datos no soportado aún")
+with open("task.json") as f:
+    task = json.load(f)
 
 # ==============================
-# ESTRATEGIA
+# CONVERTIR FECHA A TIMESTAMP
 # ==============================
-def run_strategy(df, strategy):
-    params = strategy["params"]
+def to_milliseconds(date_str):
+    dt = datetime.strptime(date_str, "%Y-%m-%d")
+    return int(dt.timestamp() * 1000)
 
-    short = params["short_window"]
-    long = params["long_window"]
+# ==============================
+# DESCARGAR DATOS BINANCE
+# ==============================
+def get_klines(symbol, interval, start, end):
+    url = "https://api.binance.com/api/v3/klines"
 
-    df["ma_short"] = df["price"].rolling(short).mean()
-    df["ma_long"] = df["price"].rolling(long).mean()
+    start_ts = to_milliseconds(start)
+    end_ts = to_milliseconds(end)
 
-    df["signal"] = 0
-    df.loc[df["ma_short"] > df["ma_long"], "signal"] = 1
-    df.loc[df["ma_short"] < df["ma_long"], "signal"] = -1
+    all_data = []
+
+    while start_ts < end_ts:
+        params = {
+            "symbol": symbol,
+            "interval": interval,
+            "startTime": start_ts,
+            "limit": 1000
+        }
+
+        response = requests.get(url, params=params)
+        data = response.json()
+
+        if not data:
+            break
+
+        all_data.extend(data)
+        start_ts = data[-1][0] + 1
+
+        time.sleep(0.2)  # evitar rate limit
+
+    return all_data
+
+# ==============================
+# FORMATEAR DATAFRAME
+# ==============================
+def to_dataframe(data):
+    df = pd.DataFrame(data, columns=[
+        "timestamp", "open", "high", "low", "close", "volume",
+        "close_time", "qav", "trades", "tbbav", "tbqav", "ignore"
+    ])
+
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit='ms')
+
+    for col in ["open", "high", "low", "close", "volume"]:
+        df[col] = df[col].astype(float)
 
     return df
 
 # ==============================
-# EVALUACIÓN
+# GUARDAR CSV
 # ==============================
-def evaluate(df):
-    df["returns"] = df["price"].pct_change()
-    df["strategy_returns"] = df["returns"] * df["signal"].shift(1)
-
-    total_return = df["strategy_returns"].sum()
-    trades = df["signal"].abs().sum()
-
-    win_rate = (df["strategy_returns"] > 0).sum() / len(df)
-
-    return {
-        "total_return": float(total_return),
-        "trades": int(trades),
-        "win_rate": float(win_rate)
-    }
+def save_csv(df, symbol, interval):
+    filename = f"{symbol}_{interval}.csv"
+    df.to_csv(filename, index=False)
+    print(f"📁 Guardado: {filename}")
 
 # ==============================
-# INFORME
+# EJECUCIÓN
 # ==============================
-def generate_report(strategy, results):
-    return {
-        "timestamp": str(datetime.now()),
-        "strategy": strategy,
-        "results": results
-    }
+if task["task"] == "download_data":
+    symbol = task["symbol"]
+    start = task["start"]
+    end = task["end"]
 
-# ==============================
-# BÓVEDA
-# ==============================
-def save_vault(report):
-    with open("vault.json", "a") as f:
-        f.write(json.dumps(report) + "\n")
+    for tf in task["timeframes"]:
+        print(f"⬇️ Descargando {symbol} {tf}...")
 
-    print("📦 INFORME GENERADO")
-    print(json.dumps(report, indent=2))
+        data = get_klines(symbol, tf, start, end)
+        df = to_dataframe(data)
 
-# ==============================
-# MAIN
-# ==============================
-df = get_historical(strategy)
-df = run_strategy(df, strategy)
-results = evaluate(df)
+        save_csv(df, symbol, tf)
 
-report = generate_report(strategy, results)
-save_vault(report)
+print("✅ TAREA COMPLETADA")
