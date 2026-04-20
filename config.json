@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "assets": [
     "bitcoin",
@@ -53,4 +54,61 @@
   ],
   "interval": 60,
   "mode": "auto"
+=======
+{
+  "assets": [
+    "bitcoin",
+    "ethereum",
+    "tether",
+    "usd-coin",
+    "binancecoin",
+    "solana",
+    "ripple",
+    "cardano",
+    "dogecoin",
+    "tron",
+    "polkadot",
+    "polygon",
+    "litecoin",
+    "bitcoin-cash",
+    "chainlink",
+    "stellar",
+    "uniswap",
+    "avalanche-2",
+    "cosmos",
+    "monero",
+    "ethereum-classic",
+    "filecoin",
+    "aptos",
+    "arbitrum",
+    "optimism",
+    "near",
+    "internet-computer",
+    "vechain",
+    "hedera-hashgraph",
+    "algorand",
+    "the-sandbox",
+    "decentraland",
+    "theta-token",
+    "axie-infinity",
+    "elrond-erd-2",
+    "tezos",
+    "flow",
+    "eos",
+    "neo",
+    "kava",
+    "dash",
+    "zcash",
+    "iota",
+    "maker",
+    "aave",
+    "compound-governance-token",
+    "sushi",
+    "yearn-finance",
+    "curve-dao-token",
+    "synthetix-network-token"
+  ],
+  "interval": 60,
+  "mode": "auto"
+>>>>>>> aa5fe46 (Aladdin engine)
 }
