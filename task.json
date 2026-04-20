@@ -1,7 +1,15 @@
 {
+<<<<<<< HEAD
   "task": "download_data",
   "symbol": "BNBUSDT",
   "timeframes": ["1h", "4h"],
   "start": "2024-11-01",
   "end": "2026-03-01"
 }
+=======
+  "symbols": ["BTCUSDT"],
+  "intervals": ["4h"],
+  "start": {"year": 2025, "month": 1},
+  "end": {"year": 2025, "month": 3}
+}
+>>>>>>> aa5fe46 (Aladdin engine)
