@@ -1,0 +1,8 @@
+<<<<<<< HEAD
+requests
+pandas
+=======
+requests
+pandas
+python-dotenv
+>>>>>>> aa5fe46 (Aladdin engine)
