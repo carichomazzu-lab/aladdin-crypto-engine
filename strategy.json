@@ -1,8 +1,7 @@
 {
-  "name": "multi_strategy",
-  "type": "moving_average",
+  "name": "moving_average",
   "params": {
-    "short_window": 5,
+    "short_window": 10,
     "long_window": 50
   }
 }
