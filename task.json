@@ -1,6 +1,6 @@
 {
   "symbols": ["BTCUSDT", "ETHUSDT", "BNBUSDT"],
-  "timeframes": ["1h", "4h"],
+  "intervals": ["1h", "4h"],
   "strategy": {
     "name": "ma_cross",
     "params": {
