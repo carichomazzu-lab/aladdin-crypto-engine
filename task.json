@@ -1,12 +1,11 @@
 {
   "symbols": ["BTCUSDT", "ETHUSDT", "BNBUSDT"],
-  "intervals": ["1h", "4h"],
-  "start": {
-    "year": 2024,
-    "month": 1
-  },
-  "end": {
-    "year": 2026,
-    "month": 3
+  "timeframes": ["1h", "4h"],
+  "strategy": {
+    "name": "ma_cross",
+    "params": {
+      "short_window": 10,
+      "long_window": 50
+    }
   }
 }
