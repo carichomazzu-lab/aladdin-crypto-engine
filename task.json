@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "task": "download_data",
   "symbol": "BNBUSDT",
   "timeframes": ["1h", "4h"],
@@ -12,4 +11,4 @@
   "start": {"year": 2025, "month": 1},
   "end": {"year": 2025, "month": 3}
 }
->>>>>>> aa5fe46 (Aladdin engine)
+
