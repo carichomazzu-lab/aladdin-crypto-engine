@@ -1,0 +1,28 @@
+{
+  "strategies": [
+    {
+      "name": "MA_CROSS_FAST",
+      "type": "MA_CROSS",
+      "params": {
+        "short_window": 5,
+        "long_window": 50
+      }
+    },
+    {
+      "name": "DONCHIAN_BREAKOUT",
+      "type": "DONCHIAN",
+      "params": {
+        "period": 20
+      }
+    },
+    {
+      "name": "MACD_BASIC",
+      "type": "MACD",
+      "params": {
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      }
+    }
+  ]
+}
